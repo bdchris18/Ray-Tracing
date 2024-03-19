@@ -1,4 +1,5 @@
 #include "Window.h"
+#include <sstream>
 
 //Window class
 Window::WindowClass Window::WindowClass::wndClass;
@@ -55,7 +56,7 @@ Window::~Window(){
 }
 
 LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{
-    if(msg = WM_NCCREATE){
+    if(msg == WM_NCCREATE){
         //extract pointer to window class from creation data
         const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
         Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
@@ -76,8 +77,55 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{
     switch(msg){
         case WM_CLOSE:
-            PostQuitMessage(18);
+            PostQuitMessage(0);
             return 0;
+        case WM_KEYDOWN:
+            kbd.OnKeyPressed(static_cast<unsigned char> (wParam));
+            break;
+        case WM_KEYUP:
+            kbd.OnKeyReleased(static_cast<unsigned char> (wParam));
+            break;
+        case WM_CHAR:
+            kbd.OnChar(static_cast<unsigned char> (wParam));
+            break;
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+//Window Exceptions
+Window::Exception::Exception(int line, const char* file, HRESULT hr) noexcept : ExceptionHandler(line, file), hr(hr){}
+
+const char* Window::Exception::what() const noexcept{
+    std::ostringstream oss;
+    oss << GetType() << std::endl
+        << "[Error Code]" << GetErrorCode() << std::endl
+        << "[Description]" << GetErrorString() << std::endl
+        << GetOriginString();
+    whatBuffer = oss.str();
+    return whatBuffer.c_str();
+}
+
+const char* Window::Exception::GetType() const noexcept{
+    return "Exception Window Handler";
+}
+
+std::string Window::Exception::TranslateErrorCode(HRESULT hr) noexcept{
+    char* pMsgBuff = nullptr;
+    // points a pointer to a buffer, ALLOCATE_BUFFER needs a pointer to pointer to work
+    DWORD nMsgLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&pMsgBuff), 0, nullptr);
+    if(nMsgLen == 0){
+        return "Unidentified error code";
+    }
+    //take error code and copy into std str
+    std::string errorString = pMsgBuff;
+    LocalFree(pMsgBuff);
+    return errorString;
+}
+
+HRESULT Window::Exception::GetErrorCode() const noexcept{
+    return hr;
+}
+
+std::string Window::Exception::GetErrorString() const noexcept{
+    return TranslateErrorCode(hr);
 }
