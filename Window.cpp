@@ -39,13 +39,15 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept{
     return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) noexcept{
+Window::Window(int width, int height, const char* name) noexcept: width(width), height(height){
     RECT wr;
     wr.left = 100;
     wr.right = width + wr.left;
     wr.top = 100;
     wr.bottom = height + wr.top;
-    AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+    if(AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0){
+        throw WND_LAST_EXCEPT();
+    }
     //create window and get hWnd
     hWnd = CreateWindow(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
     ShowWindow(hWnd, SW_SHOWDEFAULT);
@@ -53,6 +55,25 @@ Window::Window(int width, int height, const char* name) noexcept{
 
 Window::~Window(){
     DestroyWindow(hWnd);
+}
+
+void Window::SetTitle(const std::string& title){
+    if(SetWindowText(hWnd, title.c_str()) == 0){
+        throw WND_LAST_EXCEPT();
+    }
+}
+
+std::optional<int> Window::ProcessMessages(){
+    MSG msg;
+    while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)){
+        if(msg.message == WM_QUIT){
+            return msg.wParam;
+        }
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return {};
 }
 
 LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{
@@ -76,18 +97,78 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{
     switch(msg){
-        case WM_CLOSE:
+        case WM_CLOSE:{
             PostQuitMessage(0);
             return 0;
-        case WM_KEYDOWN:
-            kbd.OnKeyPressed(static_cast<unsigned char> (wParam));
+        }
+        case WM_KILLFOCUS:{
+            kbd.ClearState();
             break;
-        case WM_KEYUP:
+        }
+
+        case WM_KEYDOWN:{}
+        case WM_SYSKEYDOWN:{
+            if(!(lParam & 0x40000000) || kbd.AutoRepeatIsEnabled()){
+                kbd.OnKeyPressed(static_cast<unsigned char> (wParam));
+            }
+            break;
+        }
+        case WM_KEYUP:{}
+        case WM_SYSKEYUP:{
             kbd.OnKeyReleased(static_cast<unsigned char> (wParam));
             break;
-        case WM_CHAR:
+        }
+
+        case WM_MOUSEMOVE:{
+            POINTS pt = MAKEPOINTS(lParam);
+            if(pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height){
+                mouse.OnMouseMove(pt.x, pt.y);
+                if(!mouse.IsInWindow()){
+                    SetCapture(hWnd);
+                    mouse.OnMouseEnter();
+                }
+            }
+            else{
+                if(wParam & (MK_LBUTTON | MK_RBUTTON)){
+                    mouse.OnMouseMove(pt.x, pt.y);
+                }
+                else{
+                    ReleaseCapture();
+                    mouse.OnMouseLeave();
+                }
+            }
+        }
+        case WM_LBUTTONDOWN:{
+            const POINTS pt = MAKEPOINTS(lParam);
+            mouse.OnLeftPressed(pt.x, pt.y);
+            break;
+        }
+        case WM_RBUTTONDOWN:{
+            const POINTS pt = MAKEPOINTS(lParam);
+            mouse.OnRightPressed(pt.x, pt.y);
+            break;
+        }
+        case WM_LBUTTONUP:{
+            const POINTS pt = MAKEPOINTS(lParam);
+            mouse.OnLeftReleased(pt.x, pt.y);
+            break;
+        }
+        case WM_RBUTTONUP:{
+            const POINTS pt = MAKEPOINTS(lParam);
+            mouse.OnRightReleased(pt.x, pt.y);
+            break;
+        }
+        case WM_MOUSEHWHEEL:{
+            const POINTS pt = MAKEPOINTS(lParam);
+            const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+            mouse.OnWheelDelta(pt.x, pt.y, delta);
+            break;
+        }
+
+        case WM_CHAR:{
             kbd.OnChar(static_cast<unsigned char> (wParam));
             break;
+        }
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
