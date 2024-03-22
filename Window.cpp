@@ -39,7 +39,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept{
     return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) noexcept: width(width), height(height){
+Window::Window(int _width, int _height, const char* _name) noexcept: gfx(), width(_width), height(_height){
     RECT wr;
     wr.left = 100;
     wr.right = width + wr.left;
@@ -49,8 +49,12 @@ Window::Window(int width, int height, const char* name) noexcept: width(width), 
         throw WND_LAST_EXCEPT();
     }
     //create window and get hWnd
-    hWnd = CreateWindow(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+    hWnd = CreateWindow(WindowClass::GetName(), _name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+    if(hWnd == nullptr){
+        throw WND_LAST_EXCEPT();
+    }
     ShowWindow(hWnd, SW_SHOWDEFAULT);
+    pGfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window(){
@@ -74,6 +78,10 @@ std::optional<int> Window::ProcessMessages(){
     }
 
     return {};
+}
+
+Graphics& Window::Gfx(){
+    return *pGfx;
 }
 
 LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{

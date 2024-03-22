@@ -1,10 +1,10 @@
-OBJS	= WinMain.o Window.o Keyboard.o ExceptionHandler.o Mouse.o App.o Timer.o
-SOURCE	= WinMain.cpp Window.cpp Keyboard.cpp ExceptionHandler.cpp Mouse.cpp App.cpp Timer.cpp
-HEADER	= Window.h Keyboard.h ExceptionHandler.h Mouse.h App.h Timer.h
+OBJS	= WinMain.o Window.o Keyboard.o ExceptionHandler.o Mouse.o App.o Timer.o Graphics.o
+SOURCE	= WinMain.cpp Window.cpp Keyboard.cpp ExceptionHandler.cpp Mouse.cpp App.cpp Timer.cpp Graphics.cpp
+HEADER	= Window.h Keyboard.h ExceptionHandler.h Mouse.h App.h Timer.h Graphics.h
 OUT	= a.out
 CC	 = g++
 FLAGS	 = -g -c -Wall
-LFLAGS	 = 
+LDLIBS	 = -lm
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
@@ -29,6 +29,9 @@ App.o: App.cpp
 
 Timer.o: Timer.cpp
 	$(CC) $(FLAGS) Timer.cpp
+
+Graphics.o: Graphics.cpp
+	$(CC) $(FLAGS) Graphics.cpp
 
 clean:
 	rm -f $(OBJS) $(OUT)
