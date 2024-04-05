@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Brandon/Documents/GitHub/Ray-Tracing",
-      "program": "c:/Users/Brandon/Documents/GitHub/Ray-Tracing/build/Debug/outDebug",
+      "cwd": "c:/Users/bdchr/OneDrive/Documents/GitHub/Ray-Tracing",
+      "program": "c:/Users/bdchr/OneDrive/Documents/GitHub/Ray-Tracing/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

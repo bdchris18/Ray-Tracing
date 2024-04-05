@@ -4,10 +4,10 @@ HEADER	= Window.h Keyboard.h ExceptionHandler.h Mouse.h App.h Timer.h Graphics.h
 OUT	= a.out
 CC	 = g++
 FLAGS	 = -g -c -Wall
-LDLIBS	 = -lm
+LDLIBS	 = -L. -ld3d11 -I"C:\usr\bin\Microsoft DirectX SDK (June 2010)\Include" -mwindows
 
 all: $(OBJS)
-	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
+	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS) $(LDLIBS)
 
 WinMain.o: WinMain.cpp
 	$(CC) $(FLAGS) WinMain.cpp 

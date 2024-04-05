@@ -12,4 +12,7 @@ class App{
     private:
         Window wnd;
         Timer timer;
+        float posX;
+        float posY;
+        float posZ;
 };

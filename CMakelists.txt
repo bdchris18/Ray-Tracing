@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.0)
+
+project(rt)
+
+set(SOURCE WinMain.cpp)
+
+add_executable(${PREJECT_NAME} ${SOURCE})

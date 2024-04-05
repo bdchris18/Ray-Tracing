@@ -35,12 +35,14 @@ class Window{
                 HINSTANCE hInst;
         };
     public:
-        Window(int width, int height, const char* name) noexcept;
+        Window(int width, int height, LPCSTR name);
         ~Window();
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
-        void SetTitle(const std::string& title);
+        void SetTitle(const char* title);
         static std::optional<int> ProcessMessages();
+        int GetWidth() { return width; };
+        int GetHeight() { return height; };
         Graphics& Gfx();
     private:
         static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;

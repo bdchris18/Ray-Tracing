@@ -22,13 +22,13 @@ Window::WindowClass::WindowClass() noexcept: hInst(GetModuleHandle(nullptr)){
     wc.hCursor = nullptr;
     wc.hbrBackground = nullptr;
     wc.lpszMenuName = nullptr;
-    wc.lpszClassName = GetName();
+    wc.lpszClassName = L"Ray Tracing Engine Window";
     wc.hIconSm = nullptr;
     RegisterClassEx(&wc);
 }
 
 Window::WindowClass::~WindowClass(){
-    UnregisterClass(wndClassName, GetInstance());
+    UnregisterClassA(wndClassName, GetInstance());
 }
 
 const char* Window::WindowClass::GetName() noexcept{
@@ -39,7 +39,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept{
     return wndClass.hInst;
 }
 
-Window::Window(int _width, int _height, const char* _name) noexcept: gfx(), width(_width), height(_height){
+Window::Window(int width, int height, LPCSTR name): gfx(), width(width), height(height){
     RECT wr;
     wr.left = 100;
     wr.right = width + wr.left;
@@ -49,7 +49,8 @@ Window::Window(int _width, int _height, const char* _name) noexcept: gfx(), widt
         throw WND_LAST_EXCEPT();
     }
     //create window and get hWnd
-    hWnd = CreateWindow(WindowClass::GetName(), _name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+    hWnd = CreateWindowA(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+    //hWnd = CreateWindowA(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
     if(hWnd == nullptr){
         throw WND_LAST_EXCEPT();
     }
@@ -61,8 +62,8 @@ Window::~Window(){
     DestroyWindow(hWnd);
 }
 
-void Window::SetTitle(const std::string& title){
-    if(SetWindowText(hWnd, title.c_str()) == 0){
+void Window::SetTitle(const char* title){
+    if(SetWindowTextA(hWnd, title) == 0){
         throw WND_LAST_EXCEPT();
     }
 }
@@ -71,7 +72,7 @@ std::optional<int> Window::ProcessMessages(){
     MSG msg;
     while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)){
         if(msg.message == WM_QUIT){
-            return msg.wParam;
+            return (int)msg.wParam;
         }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -201,7 +202,7 @@ const char* Window::Exception::GetType() const noexcept{
 std::string Window::Exception::TranslateErrorCode(HRESULT hr) noexcept{
     char* pMsgBuff = nullptr;
     // points a pointer to a buffer, ALLOCATE_BUFFER needs a pointer to pointer to work
-    DWORD nMsgLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&pMsgBuff), 0, nullptr);
+    DWORD nMsgLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&pMsgBuff), 0, nullptr);
     if(nMsgLen == 0){
         return "Unidentified error code";
     }

@@ -8,7 +8,7 @@
 #include "App.h"
 #include <sstream>
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+_Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     try{
         return App{}.Go();
