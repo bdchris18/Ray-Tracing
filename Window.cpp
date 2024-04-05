@@ -106,6 +106,7 @@ LRESULT WINAPI Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept{
     switch(msg){
+<<<<<<< Updated upstream
         case WM_CLOSE:{
             PostQuitMessage(0);
             return 0;
@@ -178,6 +179,20 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
             kbd.OnChar(static_cast<unsigned char> (wParam));
             break;
         }
+=======
+        case WM_CLOSE:
+            PostQuitMessage(0);
+            return 0;
+        case WM_KEYDOWN:
+            kbd.OnKeyPressed(static_cast<unsigned char> (wParam));
+            break;
+        case WM_KEYUP:
+            kbd.OnKeyReleased(static_cast<unsigned char> (wParam));
+            break;
+        case WM_CHAR:
+            kbd.OnChar(static_cast<unsigned char> (wParam));
+            break;
+>>>>>>> Stashed changes
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -202,7 +217,11 @@ const char* Window::Exception::GetType() const noexcept{
 std::string Window::Exception::TranslateErrorCode(HRESULT hr) noexcept{
     char* pMsgBuff = nullptr;
     // points a pointer to a buffer, ALLOCATE_BUFFER needs a pointer to pointer to work
+<<<<<<< Updated upstream
     DWORD nMsgLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&pMsgBuff), 0, nullptr);
+=======
+    DWORD nMsgLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&pMsgBuff), 0, nullptr);
+>>>>>>> Stashed changes
     if(nMsgLen == 0){
         return "Unidentified error code";
     }

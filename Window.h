@@ -2,10 +2,13 @@
 #include "Includes.h"
 #include "ExceptionHandler.h"
 #include "Keyboard.h"
+<<<<<<< Updated upstream
 #include "Mouse.h"
 #include "Graphics.h"
 #include <optional>
 #include <memory>
+=======
+>>>>>>> Stashed changes
 
 class Window{
     public:
@@ -50,13 +53,19 @@ class Window{
         LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     public:
         Keyboard kbd;
+<<<<<<< Updated upstream
         Mouse mouse;
         Graphics gfx;
+=======
+>>>>>>> Stashed changes
     private:
         int width;
         int height;
         HWND hWnd;
+<<<<<<< Updated upstream
         std::unique_ptr<Graphics> pGfx;
+=======
+>>>>>>> Stashed changes
 };
 
 //error exception helper macro
